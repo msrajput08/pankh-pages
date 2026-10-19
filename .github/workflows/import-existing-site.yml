@@ -1,0 +1,29 @@
+name: Import existing website
+on:
+  push:
+    paths:
+      - ".github/workflows/import-existing-site.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy published pages and assets
+        env:
+          SOURCE_URL: https://pankhpages.netlify.app
+          DEST_DIR: dist
+          MIN_PAGES: "25"
+          SITE_KIND: pankh
+        run: python3 scripts/import_public.py
+      - name: Save complete static website in this repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist
+          if ! git diff --cached --quiet; then
+            git commit -m "Import published pankh website files"
+            git push origin HEAD:main
+          fi
